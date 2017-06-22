@@ -8,7 +8,7 @@ x.params$dist <- 'cauchy'
 y.params <- list()
 y.params$classification <- TRUE
 
-rules <- 'xor'
+rules <- 'xor' #one of: 'and', 'or', 'xor', 'mixxor'
 thresholds <- 2
 noises <- c(0.1, 0.15, 0.2)
 p <- 100

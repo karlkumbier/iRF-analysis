@@ -4,12 +4,16 @@ load('../data/rfSampleSplitNoise.Rdata')
 
 tf.idcs <- 46:80
 X <- X[,tf.idcs]
-varnames_agg <- varnames.all[tf.idcs, 2]
-varnames_agg <- gsub('_', '.', varnames_agg)
+varnames.agg <- varnames.all[tf.idcs, 2]
+varnames.agg <- gsub('_', '.', varnames.agg)
 
 responseTF <- function(x) {
-   y <- (x[,'kr1'] > 1.25 | x[,'kr2'] > 1.25) & (x[,'twi1'] > 1 | x[,'twi2'] > 1) & 
-      (x[,'D1'] > 1.25) & (x[,'hb1'] > 1.5 | x[,'hb2'] > 1.5) & (x[,'wt_ZLD'] > 2)
+  # Generate synthetic response from enhancer data 
+  y <- (x[,'kr1'] > 1.25 | x[,'kr2'] > 1.25) & 
+    (x[,'twi1'] > 1 | x[,'twi2'] > 1) & 
+    (x[,'D1'] > 1.25) & 
+    (x[,'hb1'] > 1.5 | x[,'hb2'] > 1.5) & 
+    (x[,'wt_ZLD'] > 2)
     return(y)
 }
 
@@ -34,6 +38,8 @@ for (ns in noise) {
         pred.prob <- pmin(2 * apply(pred.prob, 1, max), 1)
         y.noise <- as.numeric(runif(n) < pred.prob)
         y <- responseTF(x=X)
+        
+        # take balanced sample of responses
         n1 <- sum(y)
         n0 <- sum(!y)
         i1 <- sample(which(y), min(c(n1, n0)))
@@ -45,6 +51,8 @@ for (ns in noise) {
       } else if (ns == 'swap') {
 
         y <- responseTF(x=X)
+        
+        # take balanced sample of responses
         n1 <- sum(y)
         n0 <- sum(!y)
         i1 <- sample(which(y), min(c(n1, n0)))
@@ -66,7 +74,7 @@ for (ns in noise) {
       fit <- iRF(x=x.balanced[train.id,], y=y[train.id], 
                  xtest=x.balanced[test.id,], ytest=y[test.id], 
                  n.iter=5, interactions.return=1:5, 
-                 n.bootstrap=20, varnames.grp=varnames_agg,
+                 n.bootstrap=20, varnames.grp=varnames.agg,
                  n.cores=n.cores) 
 
       y.test <- y[test.id]
